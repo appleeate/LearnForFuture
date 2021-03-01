@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <input type="text" id="inp">
+  <script>
+    /*
+      第 3 题：什么是防抖和节流？有什么区别？如何实现？
+     */
+
+    /* 
+     答: 防抖 - 触发高频事件后n秒内函数只会执行一次，如果n秒内高频事件再次被触发，则重新计算时间
+             我自己的理解就是 比如 用户在输入框输入用户名 然后检查用户名是否已经存在
+             那么 一定是在用户输入完成以后 才像后台发送请求
+             那么用户在其中任何时刻 只要输入了 就要重新计算时间
+             直到用户不再输入了 那么这时候 才会发送请求
+             * 1. 点击按钮发送请求（保存数据之类的）
+             * 2. 搜索时自动联想
+             * 3. 自动保存
+        节流 - 高频事件触发，但在n秒内只会执行一次，所以节流会稀释函数的执行频率
+            比如滚动事件 鼠标移动事件 窗口变化事件
+            这些事件的触发频率都是非常非常的高 如果不节流 不进行稀释 就会很浪费性能
+            所以节流就是控制事件的执行频率 比如1s内只触发一次 等等
+     */
+
+    // 防抖 (核心 每次触发事件时都取消之前的延时调用方法)
+    function debounce(fn, time = 500) {
+      let timer = null; // 记录定时器的返回值
+      return function () {
+        clearTimeout(timer); // 只要触发 就清空之前的定时器
+        timer = setTimeout(() => { // 再重新创建一个新的定时器 如果time内没有再触发 那么直接执行 否则 重新开始
+          fn.apply(this, arguments)
+        }, time)
+      }
+    }
+
+    function sayHi() {
+      console.log("防抖成功");
+    }
+
+    let inp = document.getElementById("inp");
+    window.addEventListener('input', debounce(sayHi))
+
+    // 节流 (核心 每次触发事件时都判断当前是否有等待执行的延时函数)
+    function throttle(fn, time = 500) {
+      let canRun = true; // 一个标记记录 新的事件是否可以执行
+      return function () {
+        if (!canRun) return; // 如果不可以 直接return掉
+        canRun = false; // 如果可以 那么就到这一步 并且置为false
+        setTimeout(() => {
+          fn.apply(this, arguments)
+          // 最后在setTimeout执行完毕后再把标记设置为true(关键)表示可以执行下一次循环了。
+          // 当定时器没有执行的时候标记永远是false，在开头被return掉
+          canRun = true;
+        }, time)
+      }
+    }
+
+    function listenResize(e) {
+      console.log(e.target.innerWidth, e.target.innerHeight);
+    }
+
+    window.addEventListener('resize', throttle(listenResize))
+
+    // 下方是较完善版本的 防抖节流 函数
+    {
+      /**
+      * 防抖函数
+      * @param {Function} fn - 实际要执行的函数
+      * @param {Number} wait - 规定在什么时间内执行一次函数，单位是秒
+      * @param {Boolean} immediate - 是否立即执行，true为立即执行，立即执行指触发监听事件是先执行
+      * @return {Function} 经过防抖处理后的要执行的函数
+      */
+      function debounce(fn, wait, immediate) {
+        let timerId = null; // 记录定时器id
+        wait = +wait || 0; // 如果wait没有传，那么初始化0值
+        if (typeof fn !== 'function') {
+          throw new Error('debounce的第一个参数请传入函数');
+          return;
+        }
+        // 防抖后的执行函数
+        function debounced() {
+          timerId && clearTimeout(timerId);
+          // 如果是立即执行
+          if (immediate) {
+            // 如果已经过了规定时间，则执行函数 或 第一次触发监听事件
+            !timerId && fn.apply(this, arguments);
+            // 规定时间后情况定时器id，表明到达了规定时间
+            timerId = setTimeout(() => {
+              timerId = null;
+            }, wait);
+          } else { // 延后执行
+            // 只有到达了规定时间后才会执行fn函数
+            timerId = setTimeout(() => {
+              fn.apply(this, arguments);
+              timerId = null;
+            }, wait);
+          }
+        }
+        // 手动取消该次设定的防抖时间，取消后当成是“第一次触发”一样
+        function cancel() {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+        debounced.cancel = cancel;
+        return debounced;
+      }
+
+      /**
+       * 节流函数
+       * @param {Function} fn - 实际要执行的函数，对其进行节流处理
+       * @param {Number} wait - 规定的执行时间间隔
+       * @param {Object} option - 用于设置节流的函数的触发时机，
+       *                        - 默认是{leading: true, trailing: true}，表示第一次触发监听事件马上执行，停止后最后也执行一次
+       *                        - leading为false时，表示第一次触发不马上执行
+       *                        - trailing为false时，表示最后停止触发后不执行
+       * @return {Function} 返回经过节流处理后的函数
+       */
+      function throttle(fn, wait, option) {
+        let timerId = null; // 用于记录定时器的id
+        let lastTime = 0; // 上次触发fn的时间戳
+        wait = +wait || 0; // 如果wait没有传，那么初始化0值
+        option = option || {}; // 如果option没有传，那么初始化{}值
+        if (typeof fn !== 'function') {
+          throw new Error('throttle的第一个参数请传入函数');
+          return;
+        }
+        if (option.leading === false && option.trailing === false) {
+          throw new Error('option的leading 和 trailing不能同时为false');
+          return;
+        }
+        // 节流后的执行函数
+        function throttled() {
+          let now = +new Date(); // 获取当前时间
+          // 如果没有上次触发执行时间（即第一次运行），以及leading设置为false
+          !lastTime && option.leading === false && (lastTime = now);
+          // 距离到达规定的wait时间剩余时间
+          let remainingTime = wait - (now - lastTime);
+          // 条件①：如果到达了规定的间隔时间或用户自己设定了系统时间导致的不合理时间差，则立刻执行一次触发函数
+          if (remainingTime <= 0 || remainingTime > wait) {
+            fn.apply(this, arguments);
+            lastTime = now;
+            if (timerId) {
+              clearTimeout(timerId);
+              timerId = null;
+            }
+            // 条件②：如果未达到规定时间，以及要求停止后延迟执行（trailing=false）
+          } else if (!timerId && option.trailing !== false) {
+            timerId = setTimeout(() => {
+              timerId = null;
+              fn.apply(this, arguments);
+              lastTime = option.leading === false ? 0 : +new Date();
+            }, remainingTime);
+          }
+        }
+        // 手动提前终止节流时间，恢复初始状态
+        function cancel() {
+          clearTimeout(timerId);
+          timerId = null;
+          lastTime = 0;
+        }
+        throttled.cancel = cancel;
+        return throttled;
+      }
+    }
+
+
+
+  </script>
+</body>
+
+</html>
