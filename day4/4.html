@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    /*
+    第 4 题：介绍下 Set、Map、WeakSet 和 WeakMap 的区别？
+     */
+    /* 
+      Set
+        1. 成员不能重复
+        2. 只有键值，没有键名，有点类似数组
+        3. 可以遍历， 方法有 add delete has
+      weakSet
+        1. 成员都是对象
+        2. 成员都是弱引用，随时可以小时。 可以用来储存DOM节点， 不容易造成内存泄漏
+        3. 不能遍历， 方法有add，delete，has
+      Map
+        1. 本质上是键值对的集合， 类似集合
+        2. 可以遍历， 方法很多， 可以跟各种数据格式转换
+      weakMap
+        1. 只接收 对象 作为键名(null除外)，
+        2. 键名所指向的对象，不计入垃圾回收机制 （弱引用）
+        3. 不能遍历， 方法有 get，set，has，delete
+    */
+  </script>
+</body>
+
+</html>
