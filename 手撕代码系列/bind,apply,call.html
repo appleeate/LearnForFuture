@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    // bind
+    // 无法 new 实例
+    Function.prototype.myBind = function (ctx, ...outerArgs) {
+      let fn = this;
+      return function (...innerArgs) {
+        return fn.apply(ctx, [...outerArgs, ...innerArgs])
+      }
+    }
+    // 可以 new 实例
+    Function.protptype.newBind = function (ctx, ...outerArgs) {
+      let that = this;
+      function res(...innerArgs) {
+        if (this instanceof res) {
+          that.call(this, ...outerArgs, ...innerArgs)
+        } else {
+          that.call(ctx, ...outerArgs, ...innerArgs)
+        }
+        res.prototype = this.prototype;
+        return res;
+      }
+    }
+
+    // 声明一个上下文
+    let thovino = {
+      name: 'thovino'
+    }
+
+    // 声明一个构造函数
+    let eat = function (food) {
+      this.food = food
+      console.log(`${this.name} eat ${this.food}`)
+    }
+    eat.prototype.sayFuncName = function () {
+      console.log('func name : eat')
+    }
+
+    // bind一下
+    let thovinoEat = eat.bind(thovino)
+    let instance = new thovinoEat('orange')  //实际上orange放到了thovino里面
+    console.log('instance:', instance) // {}
+
+    
+    // apply
+    Function.prototype.myApply = function (ctx = window) {
+      if (typeof this !== 'function') {
+        throw new Error("不是函数")
+      }
+      const obj = ctx || window;
+      obj.fn = this;
+      const args = arguments[1] || [];
+      res = obj.fn(...args);
+      delete obj.fn; // 不删除会导致ctx属性越来越多
+      return res;
+    }
+    // call
+    Function.prototype.myCall = function (ctx = window) {
+      if (typeof this !== 'function') {
+        throw new Error("不是函数")
+      }
+      const obj = ctx || window;
+      obj.fn = this;
+      const args = [...arguments].slice(1);
+      res = obj.fn(...args);
+      delete obj.fn; // 不删除会导致ctx属性越来越多
+      return res;
+    }
+
+    //用法：f.call(obj,arg1)
+    function f(a, b) {
+      console.log(a + b)
+      console.log(this.name)
+    }
+    let obj = {
+      name: 1
+    }
+    console.log(f.myCall(obj, 1, 2));
+     //否则this指向window
+
+    // obj.f.call({ name: 'Spike' }) //打出来的是 Spike
+  </script>
+</body>
+
+</html>
