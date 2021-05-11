@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    // 1. 请实现一个add函数， 满足以下功能
+    // add(1)(2)(3) // 6
+    const fn = a => b => c => a + b + c;
+    console.log(fn(1)(2)(3));
+    // 2. 给定两个数组， 写一个方法计算它们的交集
+    // 给定 nums1 = [1, 2, 2, 1]; nums2 = [2, 2,] 返回 [2, 2]
+    const nums1 = [1, 2, 2, 1];
+    const nums2 = [2, 2];
+    const set = new Set(nums2);
+    // 交集
+    const intersect = nums1.filter(_ => set.has(_));
+    console.log(intersect);
+    // 3. 实现一个节流函数
+    // 节流 (核心 每次触发事件时都判断当前是否有等待执行的延时函数)
+    function throttle(fn, time = 500) {
+      let canRun = true; // 一个标记记录 新的事件是否可以执行
+      return function () {
+        if (!canRun) return; // 如果不可以 直接return掉
+        canRun = false; // 如果可以 那么就到这一步 并且置为false
+        setTimeout(() => {
+          fn.apply(this, arguments)
+          canRun = true;
+        }, time)
+      }
+    }
+    // 4. 实现(5).add(5).minus(1)功能
+    //  (5).add(5).minus(1) // 9
+    Number.prototype.add = function (val) {
+      return this + ~~val;
+    }
+    Number.prototype.minus = function (val) {
+      return this - ~~val;
+    }
+    console.log((5).add(5).minus(1));
+    // 5. 实现一个sleep函数 比如sleep(1000)意味这等待1000ms
+    const sleep = time => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve()
+        }, time);
+      })
+    }
+    const test = async () => {
+      console.log(1);
+      await sleep(1000); // 休眠一秒
+      console.log(2);
+    }
+    test()
+
+  </script>
+</body>
+
+</html>
